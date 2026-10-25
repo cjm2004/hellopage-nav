@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="assets/js/theme.js"></script>
+    <title>登录管理后台</title>
+    <link href="assets/css/style.css" type="text/css" rel="stylesheet">
+</head>
+
+<body class="auth-page">
+    <main class="auth-shell" aria-labelledby="auth-title">
+        <section class="auth-panel">
+            <a class="auth-brand" href="index.html" aria-label="返回导航首页">
+                <span class="auth-brand-mark">H</span>
+                <span>HelloPage 导航</span>
+            </a>
+            <div class="auth-heading">
+                <span class="eyebrow">ADMIN ACCESS</span>
+                <h1 id="auth-title">登录管理后台</h1>
+                <p id="auth-desc">登录后可以编辑导航分组、站点和页面设置。</p>
+            </div>
+            <div class="auth-notice" id="auth-notice" role="status"></div>
+            <form id="auth-form" class="auth-form">
+                <label class="field-label" for="password" id="password-label">管理员密码</label>
+                <div class="password-field">
+                    <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" required>
+                    <button type="button" id="toggle-password" class="password-toggle" aria-label="显示密码">显示</button>
+                </div>
+                <div class="password-field confirm-field" id="confirm-wrap">
+                    <input id="confirm-password" name="confirm-password" type="password" minlength="8" autocomplete="new-password" placeholder="再次输入密码">
+                </div>
+                <button class="auth-submit" type="submit" id="auth-submit">登录后台</button>
+            </form>
+            <a class="auth-back" href="index.html">返回导航首页</a>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            if (window.applyThemeColor) {
+                fetch("/api/data", { credentials: "same-origin", signal: AbortSignal.timeout(5000) }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+                    if (d && d.siteConfig && d.siteConfig.themeColor && window.HP_THEMES && window.HP_THEMES[d.siteConfig.themeColor]) applyThemeColor(d.siteConfig.themeColor);
+                }).catch(function () {});
+            }
+            var form = document.getElementById("auth-form");
+            var password = document.getElementById("password");
+            var submit = document.getElementById("auth-submit");
+            var notice = document.getElementById("auth-notice");
+            var desc = document.getElementById("auth-desc");
+            var label = document.getElementById("password-label");
+            var toggle = document.getElementById("toggle-password");
+            var confirmWrap = document.getElementById("confirm-wrap");
+            var confirmPassword = document.getElementById("confirm-password");
+            var params = new URLSearchParams(window.location.search);
+            var requestedNext = params.get("next") || "/admin.html";
+            var next = "/admin.html";
+            try { var target = new URL(requestedNext, location.origin); if (target.origin === location.origin && target.pathname === "/admin.html") next = target.pathname; } catch (error) { /* 只允许返回本站后台 */ }
+            var configured = false, ready = false;
+            submit.disabled = true;
+            confirmWrap.hidden = true;
+            password.maxLength = 128;
+            confirmPassword.maxLength = 128;
+            confirmPassword.setAttribute("aria-label", "再次输入管理员密码");
+
+            function showNotice(text, type) {
+                notice.textContent = text || "";
+                notice.className = "auth-notice" + (type ? " " + type : "");
+            }
+
+            function setMode(isConfigured) {
+                configured = isConfigured;
+                ready = true; submit.disabled = false;
+                document.getElementById("auth-title").textContent = configured ? "登录管理后台" : "设置管理员密码";
+                if (configured) {
+                    desc.textContent = "登录后可以编辑导航分组、站点和页面设置。";
+                    label.textContent = "管理员密码";
+                    password.autocomplete = "current-password";
+                    submit.textContent = "登录后台";
+                    confirmWrap.hidden = true;
+                    confirmPassword.required = false;
+                    document.title = "登录管理后台";
+                } else {
+                    desc.textContent = "首次使用请先设置一个管理员密码，至少 8 个字符。";
+                    label.textContent = "设置管理员密码";
+                    password.autocomplete = "new-password";
+                    submit.textContent = "创建并进入后台";
+                    confirmWrap.hidden = false;
+                    confirmPassword.required = true;
+                    document.title = "初始化管理后台";
+                }
+            }
+
+            fetch("/api/auth/status", { credentials: "same-origin", signal: AbortSignal.timeout(5000) })
+                .then(function (r) { if (!r.ok) throw new Error("认证服务不可用"); return r.json(); })
+                .then(function (data) {
+                    if (data.authenticated) {
+                        window.location.replace(next);
+                        return;
+                    }
+                    setMode(!!data.configured);
+                })
+                .catch(function () {
+                    showNotice("登录服务暂时不可用，请稍后重试。", "error");
+                });
+
+            toggle.addEventListener("click", function () {
+                var visible = password.type === "text";
+                password.type = visible ? "password" : "text";
+                toggle.textContent = visible ? "显示" : "隐藏";
+                toggle.setAttribute("aria-label", visible ? "显示密码" : "隐藏密码");
+            });
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                if (!ready) { showNotice("正在读取登录状态，请稍候。", "error"); return; }
+                var value = password.value;
+                if (value.length < 8 || value.length > 128) {
+                    showNotice("密码至少需要 8 个字符。", "error");
+                    password.focus();
+                    return;
+                }
+                if (!configured && value !== confirmPassword.value) {
+                    showNotice("两次输入的密码不一致。", "error");
+                    confirmPassword.focus();
+                    return;
+                }
+                submit.disabled = true;
+                submit.textContent = configured ? "登录中..." : "创建中...";
+                showNotice("", "");
+                fetch(configured ? "/api/auth/login" : "/api/auth/setup", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: value }),
+                    signal: AbortSignal.timeout(10000)
+                }).then(function (r) {
+                    return r.json().then(function (data) { return { ok: r.ok, data: data }; });
+                }).then(function (result) {
+                    if (!result.ok) {
+                        throw new Error(result.data.error || "登录失败");
+                    }
+                    window.location.replace(next);
+                }).catch(function (error) {
+                    submit.disabled = false;
+                    submit.textContent = configured ? "登录后台" : "创建并进入后台";
+                    showNotice(error.message || "操作失败，请重试。", "error");
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/update.js"></script>
+    <title>导航管理后台</title>
+    <link href="assets/css/style.css" type="text/css" rel="stylesheet">
+    <link href="assets/css/link-editor.css" type="text/css" rel="stylesheet">
+    <link href="assets/css/articles.css" rel="stylesheet">
+    <link href="assets/css/article-admin.css" rel="stylesheet">
+    <style>
+        body { background: var(--page-bg); }
+        .admin-wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+
+        .admin-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 26px;
+        }
+        .admin-head h1 { font-size: 24px; margin: 4px 0 0; font-weight: 800; flex: 1; }
+        .admin-actions { display: flex; align-items: center; gap: 8px; }
+        .admin-head .eyebrow { display: block; font-size: 10px; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            color: var(--ink);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .btn.primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            border: none;
+            box-shadow: 0 6px 16px rgba(var(--accent-rgb), .3);
+        }
+        .btn.danger { color: #e11d48; }
+        .btn.small { padding: 5px 10px; font-size: 12px; border-radius: 8px; }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            font-size: 15px;
+            margin: 0 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            font-size: 12px;
+            color: var(--ink-faint);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        .field input[type=text],
+        .field input[type=url],
+        .field textarea,
+        .field select,
+        .field input[type=password] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            font-size: 14px;
+            background: var(--control-bg);
+            outline: none;
+            color: var(--ink);
+            font-family: inherit;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .field input:focus, .field textarea:focus {
+            border-color: rgba(var(--accent-rgb), .5);
+            box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12);
+        }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .check-inline { display: flex; align-items: center; gap: 6px; margin: 4px 0; color: var(--ink-soft); font-weight: 500; }
+        .check-inline input { width: auto; }
+
+        .group-card { border-top: 1px solid rgba(17, 24, 39, .08); padding: 16px 0 6px; }
+        .group-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .group-head .gicon {
+            width: 34px; height: 34px; flex: none;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; background: var(--glass-bg);
+            font-size: 17px; cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+        .group-head input[type=text] { flex: 1; min-width: 0; width: 100%; padding: 8px; border: 1px solid var(--glass-border); border-radius: 9px; font: inherit; }
+        .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+        #save-status { color: var(--ink-soft); }
+        .toast { max-width: calc(100vw - 28px); }
+        .link-row > input { min-width: 0; }
+        .group-head .actions { display: flex; gap: 6px; }
+
+        .link-row {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr 1.6fr 34px;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .link-row input {
+            width: 100%;
+            padding: 8px 11px;
+            border: 1px solid var(--glass-border);
+            border-radius: 9px;
+            font-size: 13px;
+            background: var(--control-bg);
+            outline: none;
+            color: var(--ink);
+        }
+        .link-row input:focus { border-color: rgba(var(--accent-rgb), .5); }
+        .link-row .del {
+            width: 32px; height: 32px;
+            border: none; border-radius: 9px;
+            background: rgba(225, 29, 72, .08);
+            color: #e11d48; cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .link-row .del:hover { background: rgba(225, 29, 72, .16); }
+
+        .link-hint { font-size: 11px; color: var(--ink-faint); text-align: right; margin: 0 0 10px; }
+        .link-check-toolbar { display: flex; align-items: center; gap: 10px; margin: -6px 0 16px; }
+        .link-check-status { font-size: 12px; color: var(--ink-soft); }
+        .link-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--ink-faint); opacity: .55; }
+        .link-dot.checking { background: #f59e0b; opacity: 1; }
+        .link-dot.ok { background: #10b981; opacity: 1; }
+        .link-dot.err { background: #ef4444; opacity: 1; }
+
+        .toast {
+            position: fixed;
+            top: 24px; left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: #111827; color: #fff;
+            padding: 11px 22px; border-radius: 12px;
+            font-size: 14px; z-index: 9999;
+            transition: transform .3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        @media screen and (max-width: 680px) {
+            .admin-wrap { padding: 24px 14px 56px; }
+            .admin-head { align-items: flex-start; flex-direction: column; gap: 12px; }
+            .admin-actions { width: 100%; flex-wrap: wrap; }
+            .admin-actions .btn { flex: 1; justify-content: center; min-width: 0; padding-left: 10px; padding-right: 10px; }
+            .row2 { grid-template-columns: 1fr; gap: 0; }
+            .card { padding: 18px 14px; }
+            .group-head { flex-wrap: wrap; }
+            .group-head .actions { margin-left: auto; }
+            .link-row { grid-template-columns: minmax(0,1fr) auto auto 34px !important; }
+            .link-row input { font-size: 16px; }
+            .link-summary strong, .link-summary span { overflow-wrap: anywhere; }
+            .link-dot { align-self: center; }
+        }
+        .link-row { grid-template-columns: minmax(0,1fr) auto auto 34px !important; }
+        .link-summary { min-width: 0; display: grid; gap: 3px; padding: 8px 0; }
+        .link-summary strong { font-size: 14px; overflow-wrap: anywhere; }
+        .link-summary span { font-size: 12px; color: var(--ink-soft); overflow-wrap: anywhere; }
+        .link-summary small { font-size: 11px; color: #0f766e; }
+        .admin-wrap { max-width: 1180px; padding-top: 24px; }
+        .admin-head { position: sticky; top: 0; z-index: 30; margin: -24px 0 20px; padding: 20px 0 14px; background: var(--page-bg); justify-content: space-between; }
+        .admin-head .admin-actions { flex-wrap: wrap; justify-content: flex-end; }
+        .admin-layout { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: 24px; align-items: start; }
+        .admin-nav { position: sticky; top: 110px; display: grid; gap: 6px; padding: 8px; border: 1px solid #fff; border-radius: 18px; background: var(--glass-bg); }
+        .admin-nav a { display: block; padding: 12px 14px; border-radius: 11px; color: var(--ink-soft); font-size: 14px; font-weight: 600; text-decoration: none; }
+        .admin-nav a:hover { background: var(--accent-faint); }
+        .admin-nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+        .admin-nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .admin-main { min-width: 0; }
+        .admin-panel[hidden] { display: none !important; }
+        .admin-panel { scroll-margin-top: 112px; }
+        .admin-panel h2:focus { outline: none; }
+        .admin-panel .panel-hint { margin: -4px 0 20px; color: var(--ink-soft); font-size: 13px; line-height: 1.7; }
+        .admin-save { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        #save-status { margin: 0; font-size: 12px; line-height: 1.5; max-width: 300px; }
+        @media screen and (max-width: 680px) {
+            .admin-wrap { padding-top: 16px; }
+            .admin-head { margin-top: -16px; margin-bottom: 12px; padding-top: 16px; gap: 10px; }
+            .admin-head h1 { font-size: 21px; }
+            .admin-head .admin-actions { justify-content: flex-start; }
+            .admin-save { width: 100%; align-items: stretch; }
+            #save-status { max-width: none; }
+            .admin-layout { display: block; }
+            .admin-nav { position: static; display: flex; flex-wrap: wrap; gap: 3px; padding: 5px; margin-bottom: 14px; border-radius: 13px; }
+            .admin-nav a { flex: 1 1 88px; padding: 10px 4px; text-align: center; font-size: 12px; white-space: nowrap; }
+            .admin-panel { scroll-margin-top: 218px; }
+            .field input, .field select, .field textarea { font-size: 16px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-wrap">
+        <div class="admin-head">
+            <div>
+                <span class="eyebrow">ADMIN ACCESS</span>
+                <h1>导航管理后台</h1>
+            </div>
+            <div class="admin-actions">
+                <button class="btn small" id="mode-toggle" type="button">外观：跟随系统</button>
+                <button class="btn small" id="update-check-btn" type="button">检查更新</button>
+                <button class="btn small" id="switch-wallpaper-btn" type="button">切换壁纸</button>
+                <button class="btn small" id="donate-btn" type="button">❤ 捐赠</button>
+                <a class="btn" href="index.html">返回首页</a>
+                <button class="btn" onclick="logout()">退出登录</button>
+                <div class="admin-save"><button class="btn primary" onclick="save()">保存全部</button><p id="save-status" role="status" aria-live="polite">正在加载配置…</p></div>
+            </div>
+        </div>
+
+        <div class="admin-layout">
+            <nav class="admin-nav" aria-label="后台设置导航">
+                <a href="#dashboard" aria-controls="panel-dashboard">仪表盘</a>
+                <a href="#wallpapers" aria-controls="panel-wallpapers">壁纸</a>
+                <a href="#site" aria-controls="panel-site">站点设置</a>
+                <a href="#navigation" aria-controls="panel-navigation">导航管理</a>
+                <a href="#articles" aria-controls="panel-articles">文章发布</a>
+                <a href="#ai" aria-controls="panel-ai">AI 接入</a>
+                <a href="#security" aria-controls="panel-security">备份安全</a>
+            </nav>
+            <main class="admin-main">
+        <section class="card admin-panel" id="panel-articles" aria-labelledby="heading-articles"></section>
+        <section class="card admin-panel" id="panel-dashboard" aria-labelledby="heading-dashboard"><h2 id="heading-dashboard" tabindex="-1">浏览量仪表盘</h2></section>
+        <section class="card admin-panel" id="panel-wallpapers" aria-labelledby="heading-wallpapers">
+            <h2 id="heading-wallpapers" tabindex="-1">壁纸管理</h2>
+            <div class="wp-settings">
+                <h3>壁纸设置</h3>
+                <div class="row2">
+                    <div class="field">
+                        <label>固定背景图 / 视频（留空使用内置壁纸）</label>
+                        <input type="text" id="cfg-coverImg" placeholder="图片 URL 或 mp4 视频 URL">
+                    </div>
+                    <div class="field">
+                        <label for="cfg-coverFixed">背景显示方式</label>
+                        <select id="cfg-coverFixed"><option value="false">随页面滚动</option><option value="true">固定背景</option></select>
+                    </div>
+                </div>
+                <div class="row2">
+                    <div class="field">
+                        <label for="cfg-bgMode">壁纸模式</label>
+                        <select id="cfg-bgMode">
+                            <option value="auto">自动：节日 / 节气优先，其余每日轮换</option>
+                            <option value="rotation">每日轮换（忽略节日）</option>
+                            <option value="festival">仅节日 / 节气</option>
+                            <option value="off">关闭自动壁纸</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="cfg-bgRotateInterval">每日壁纸轮换间隔</label>
+                        <select id="cfg-bgRotateInterval">
+                            <option value="daily">每天</option>
+                            <option value="halfDay">每半天（12 小时）</option>
+                            <option value="sixHours">每 6 小时</option>
+                            <option value="hourly">每小时</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="panel-hint">固定背景优先。壁纸模式选择“自动”即可满足：节日 / 节气当天固定节日壁纸，其他日期按上面间隔轮换每日壁纸。</p>
+            </div>
+        </section>
+        <section class="card admin-panel" id="panel-site" aria-labelledby="heading-site">
+            <h2 id="heading-site" tabindex="-1">站点设置</h2>
+            <p class="panel-hint">设置首页文字、主题和页脚信息。壁纸相关设置已移到「壁纸」页。修改后点击“保存全部”。</p>
+            <div class="row2">
+                <div class="field">
+                    <label>首页标题</label>
+                    <input type="text" id="cfg-title" placeholder="上网，从这里开始！">
+                </div>
+                <div class="field">
+                    <label>首页一言</label>
+                    <input type="text" id="cfg-subtitle" placeholder="能说不能行，不是真智慧">
+                </div>
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label for="cfg-nameScrollSpeed">网站名称滚动速度（像素/秒）</label>
+                    <input type="number" id="cfg-nameScrollSpeed" min="5" max="100" step="1" value="24">
+                </div>
+                <div class="field">
+                    <label for="cfg-descriptionScrollSpeed">备注 / 标签滚动速度（像素/秒）</label>
+                    <input type="number" id="cfg-descriptionScrollSpeed" min="5" max="100" step="1" value="18">
+                </div>
+            </div>
+            <p class="panel-hint">仅超长文字滚动，数值越大越快（5–100）。滚到末尾后跳回开头，继续单向滚动；修改后点击“保存全部”。</p>
+            <div class="field">
+                <label for="cfg-themeColor">主题色</label>
+                <select id="cfg-themeColor"></select>
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label>站点名称（页脚）</label>
+                    <input type="text" id="cfg-siteName" placeholder="我的导航">
+                </div>
+                <div class="field">
+                    <label>ICP 备案号（留空不显示）</label>
+                    <input type="text" id="cfg-icp" placeholder="京ICP备12345678号">
+                </div>
+            </div>
+            <div class="field">
+                <label>公安备案号（留空不显示）</label>
+                <input type="text" id="cfg-gongan" placeholder="京公网安备12345678号">
+            </div>
+        </section>
+
+        <section class="card admin-panel" id="panel-security" aria-labelledby="heading-security">
+            <h2 id="heading-security" tabindex="-1">配置备份与安全</h2>
+            <p class="panel-hint">导入导出导航配置，或修改管理员密码。</p>
+            <div class="admin-actions">
+                <button class="btn" onclick="exportConfig()">导出配置</button>
+                <button class="btn" onclick="document.getElementById('import-file').click()">导入配置</button>
+                <input id="import-file" type="file" accept="application/json,.json" hidden>
+            </div>
+            <p>备份仅包含站点设置和导航链接，不包含管理员密码。导入后请检查并点击“保存全部”。</p>
+            <div class="wd-section">
+                <h3>WebDAV 存储</h3>
+                <p class="panel-hint">用于读取 WebDAV 中的照片，以及把全面备份保存到 WebDAV。</p>
+                <div class="row2">
+                    <div class="field"><label for="wd-url">WebDAV 地址</label><input id="wd-url" type="text" placeholder="https://nas.example.com/dav/"></div>
+                    <div class="field"><label for="wd-username">用户名</label><input id="wd-username" type="text" autocomplete="off"></div>
+                </div>
+                <div class="row2">
+                    <div class="field"><label for="wd-password">密码</label><input id="wd-password" type="password" autocomplete="off"></div>
+                    <div class="field"><label for="wd-photo-path">照片路径（可选）</label><input id="wd-photo-path" type="text" placeholder="例如 /photos"></div>
+                </div>
+                <div class="field"><label for="wd-backup-path">备份保存路径</label><input id="wd-backup-path" type="text" placeholder="例如 /hellopage-backups"></div>
+                <div class="admin-actions">
+                    <button class="btn" id="wd-save" type="button">保存 WebDAV 设置</button>
+                    <button class="btn" id="wd-test" type="button">测试连接</button>
+                    <span id="wd-status" class="link-check-status"></span>
+                </div>
+            </div>
+            <div class="wd-section">
+                <h3>全面备份</h3>
+                <p class="panel-hint">备份内容包含站点配置、导航、文章、抽奖、评论、浏览量、壁纸、媒体文件等（不含本机备份目录本身）。</p>
+                <div class="admin-actions">
+                    <button class="btn" id="backup-local" type="button">立即备份到本地</button>
+                    <button class="btn" id="backup-webdav" type="button">立即备份到 WebDAV</button>
+                    <span id="backup-status" class="link-check-status"></span>
+                </div>
+                <div id="backup-list" class="backup-list"></div>
+            </div>
+            <form id="password-form">
+                <div class="field"><label for="old-password">当前密码</label><input id="old-password" type="password" autocomplete="current-password" required></div>
+                <div class="row2">
+                    <div class="field"><label for="new-password">新密码（8–128 个字符）</label><input id="new-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></div>
+                    <div class="field"><label for="new-password-confirm">确认新密码</label><input id="new-password-confirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></div>
+                </div>
+                <button class="btn" type="submit">修改管理员密码</button>
+            </form>
+        </section>
+
+        <section class="card admin-panel" id="panel-ai" aria-labelledby="heading-ai">
+            <h2 id="heading-ai" tabindex="-1">AI 智能填写</h2>
+            <p class="panel-hint">配置智能填写服务；此处的接口配置需单独保存。</p>
+            <p style="font-size:12px;color:var(--ink-faint);margin:0 0 14px;">配置 AI 接口后，新增链接时可输入网址自动填写名称、备注与图标；图标获取失败会自动用 AI 搜索。接口为 OpenAI 兼容格式。</p>
+            <div class="field">
+                <label for="ai-endpoint">AI 接口地址（chat/completions 完整地址）</label>
+                <input type="text" id="ai-endpoint" placeholder="例如 https://api.deepseek.com/v1/chat/completions" autocomplete="off">
+            </div>
+            <div class="row2">
+                <div class="field">
+                    <label for="ai-key">API Key</label>
+                    <input type="password" id="ai-key" placeholder="sk-..." autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="ai-model">模型名称</label>
+                    <input type="text" id="ai-model" placeholder="例如 deepseek-chat" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="ai-description-max">描述最大字数</label>
+                    <input type="number" id="ai-description-max" min="20" max="4096" step="1" value="120" inputmode="numeric">
+                </div>
+            </div>
+            <div class="admin-actions">
+                <button class="btn" onclick="saveAIConfig()">保存 AI 配置</button>
+                <button class="btn primary" onclick="testAI()">测试（百度主页）</button>
+            </div>
+            <p id="ai-status" role="status" style="font-size:12px;margin:12px 0 0;"></p>
+        </section>
+
+        <section class="card admin-panel" id="panel-navigation" aria-labelledby="heading-navigation">
+            <h2 id="heading-navigation" tabindex="-1">导航分组</h2>
+            <p class="panel-hint">管理分组和网站链接，调整顺序后点击“保存全部”。</p>
+            <div class="link-check-toolbar">
+                <button class="btn small" id="check-all-links" type="button">一键全部检测</button>
+                <span id="check-links-status" class="link-check-status"></span>
+            </div>
+            <div id="groups"></div>
+            <button class="btn" style="width:100%;justify-content:center" onclick="addGroup()">＋ 新增分组</button>
+        </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- 捐赠弹窗 -->
+    <div id="donate-modal" class="donate-modal" hidden>
+        <div class="donate-panel" role="dialog" aria-modal="true" aria-labelledby="donate-title">
+            <h2 id="donate-title">支持一下 ❤</h2>
+            <p class="donate-text">如果这个项目对你有帮助，欢迎扫码请作者喝杯咖啡～</p>
+            <div class="donate-grid">
+                <figure>
+                    <img src="assets/img/donate/wechat.png" alt="微信支付收款码" loading="lazy">
+                    <figcaption>微信支付</figcaption>
+                </figure>
+                <figure>
+                    <img src="assets/img/donate/alipay.jpg" alt="支付宝收款码" loading="lazy">
+                    <figcaption>支付宝</figcaption>
+                </figure>
+            </div>
+            <button class="donate-close" data-close type="button">关闭</button>
+        </div>
+    </div>
+
+    <script src="assets/js/links.js"></script>
+    <script>
+        (function () {
+            var nav = document.querySelector('.admin-nav');
+            var links = Array.from(nav.querySelectorAll('a'));
+            var panels = Array.from(document.querySelectorAll('.admin-panel'));
+            function selectSection(focus) {
+                var key = location.hash.slice(1);
+                if (!links.some(function (a) { return a.hash.slice(1) === key; })) key = 'site';
+                panels.forEach(function (panel) { panel.hidden = panel.id !== 'panel-' + key; });
+                links.forEach(function (a) {
+                    if (a.hash.slice(1) === key) a.setAttribute('aria-current', 'page');
+                    else a.removeAttribute('aria-current');
+                });
+                if (focus) {
+                    document.getElementById('heading-' + key).focus({ preventScroll: true });
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                }
+            }
+            nav.addEventListener('click', function (event) {
+                var link = event.target.closest('a');
+                if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                if (location.hash !== link.hash) history.pushState(null, '', link.hash);
+                selectSection(true);
+            });
+            window.addEventListener('popstate', function () { selectSection(true); });
+            window.addEventListener('hashchange', function () { selectSection(true); });
+            selectSection(false);
+        })();
+        // 默认数据来自 links.js；后台保存的数据存在 data.json，优先加载
+        var data = {
+            navGroups: (typeof NAV_GROUPS !== "undefined" ? NAV_GROUPS : []).map(cloneGroup),
+            siteConfig: Object.assign({}, (typeof SITE_CONFIG !== "undefined" ? SITE_CONFIG : {}))
+        };
+
+        function cloneGroup(g) {
+            return Object.assign({}, g, { icon: g.icon || "", links: (g.links || []).map(function (l) { return Object.assign({}, l, { icon: l.icon || "" }); }) });
+        }
+
+        function toast(msg) {
+            var t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3500);
+        }
+
+        var dirty = false, loaded = false, saving = false, toastTimer;
+        function markDirty() { if (!loaded) return; dirty = true; document.getElementById("save-status").textContent = "有未保存的修改"; }
+        document.querySelector('.admin-wrap').addEventListener('input', function (e) { if (!e.target.closest('#password-form, #panel-articles')) markDirty(); });
+        document.querySelector('.admin-wrap').addEventListener('change', function (e) { if (!e.target.closest('#password-form, #panel-articles')) markDirty(); });
+        var themeSelectEl = document.getElementById("cfg-themeColor");
+        if (themeSelectEl) themeSelectEl.addEventListener("change", function () { if (window.applyThemeColor) applyThemeColor(this.value); });
+        var modeToggle = document.getElementById("mode-toggle");
+        if (modeToggle && window.cycleThemeMode) {
+            modeToggle.addEventListener("click", function () {
+                window.cycleThemeMode();
+                if (window.updateThemeModeButton) window.updateThemeModeButton(modeToggle);
+            });
+            if (window.updateThemeModeButton) window.updateThemeModeButton(modeToggle);
+        }
+        var switchWallpaperBtn = document.getElementById("switch-wallpaper-btn");
+        if (switchWallpaperBtn) {
+            switchWallpaperBtn.addEventListener("click", function () {
+                switchWallpaperBtn.disabled = true;
+                switchWallpaperBtn.textContent = "切换中…";
+                fetch("/api/admin/wallpapers/switch", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(10000) })
+                    .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "切换失败"); return d; }); })
+                    .then(function (d) { toast("已切换壁纸：" + (d.label || "")); })
+                    .catch(function (e) { toast("切换失败：" + e.message); })
+                    .finally(function () { switchWallpaperBtn.disabled = false; switchWallpaperBtn.textContent = "切换壁纸"; });
+            });
+        }
+        var donateBtn = document.getElementById("donate-btn");
+        var donateModal = document.getElementById("donate-modal");
+        if (donateBtn && donateModal) {
+            donateBtn.addEventListener("click", function () { donateModal.hidden = false; });
+            donateModal.addEventListener("click", function (event) {
+                if (event.target === donateModal || event.target.closest("[data-close]")) donateModal.hidden = true;
+            });
+        }
+        function loadWebdavSettings() {
+            fetch("/api/admin/webdav", { credentials: "same-origin" }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "读取失败"); return d.config || {}; }); }).then(function (c) {
+                document.getElementById("wd-url").value = c.url || "";
+                document.getElementById("wd-username").value = c.username || "";
+                document.getElementById("wd-password").value = "";
+                document.getElementById("wd-photo-path").value = c.photoPath || "";
+                document.getElementById("wd-backup-path").value = c.backupPath || "";
+            }).catch(function () {});
+        }
+        function saveWebdav() {
+            var payload = { url: document.getElementById("wd-url").value.trim(), username: document.getElementById("wd-username").value.trim(), password: document.getElementById("wd-password").value, photoPath: document.getElementById("wd-photo-path").value.trim(), backupPath: document.getElementById("wd-backup-path").value.trim(), enabled: true };
+            var btn = document.getElementById("wd-save"); btn.disabled = true;
+            fetch("/api/admin/webdav", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+                .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "保存失败"); return d; }); })
+                .then(function () { toast("WebDAV 设置已保存"); })
+                .catch(function (e) { toast("保存失败：" + e.message); })
+                .finally(function () { btn.disabled = false; });
+        }
+        function testWebdav() {
+            var btn = document.getElementById("wd-test"); btn.disabled = true; btn.textContent = "测试中…";
+            fetch("/api/admin/webdav/test", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}" })
+                .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "测试失败"); return d; }); })
+                .then(function () { document.getElementById("wd-status").textContent = "连接正常"; toast("WebDAV 连接正常"); })
+                .catch(function (e) { document.getElementById("wd-status").textContent = e.message; toast("测试失败：" + e.message); })
+                .finally(function () { btn.disabled = false; btn.textContent = "测试连接"; });
+        }
+        function runBackup(target) {
+            var status = document.getElementById("backup-status");
+            status.textContent = target === "webdav" ? "正在创建并上传备份…" : "正在创建备份…";
+            fetch("/api/admin/backup", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target: target }), signal: AbortSignal.timeout(180000) })
+                .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "备份失败"); return d; }); })
+                .then(function (d) { status.textContent = "备份完成：" + d.file; toast("备份完成"); loadBackups(); })
+                .catch(function (e) { status.textContent = "备份失败：" + e.message; toast("备份失败：" + e.message); });
+        }
+        function loadBackups() {
+            fetch("/api/admin/backup", { credentials: "same-origin" }).then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "读取失败"); return d.backups || []; }); }).then(function (list) {
+                var box = document.getElementById("backup-list"); box.replaceChildren();
+                if (!list.length) { box.textContent = "暂无备份记录"; return; }
+                list.forEach(function (b) {
+                    var row = document.createElement("div"); row.className = "backup-row";
+                    row.innerHTML = '<span>' + esc(b.name) + '</span><small>' + (b.size / 1024 / 1024).toFixed(2) + ' MB · ' + esc(b.time) + '</small>';
+                    var del = document.createElement("button"); del.className = "btn small"; del.type = "button"; del.textContent = "删除";
+                    del.addEventListener("click", function () { if (!confirm("删除备份 " + b.name + "？")) return; fetch("/api/admin/backups/delete?name=" + encodeURIComponent(b.name), { method: "DELETE", credentials: "same-origin" }).then(function () { loadBackups(); }); });
+                    row.appendChild(del); box.appendChild(row);
+                });
+            }).catch(function () {});
+        }
+        var wdSave = document.getElementById("wd-save"); if (wdSave) wdSave.addEventListener("click", saveWebdav);
+        var wdTest = document.getElementById("wd-test"); if (wdTest) wdTest.addEventListener("click", testWebdav);
+        var bLocal = document.getElementById("backup-local"); if (bLocal) bLocal.addEventListener("click", function () { runBackup("local"); });
+        var bWebdav = document.getElementById("backup-webdav"); if (bWebdav) bWebdav.addEventListener("click", function () { runBackup("webdav"); });
+        loadWebdavSettings(); loadBackups();
+        var updateCheckBtn = document.getElementById("update-check-btn");
+        if (updateCheckBtn && window.hpCheckUpdate) {
+            updateCheckBtn.addEventListener("click", function () {
+                updateCheckBtn.disabled = true;
+                var oldText = updateCheckBtn.textContent;
+                updateCheckBtn.textContent = "检查中…";
+                Promise.resolve(window.hpCheckUpdate()).then(function (result) {
+                    updateCheckBtn.disabled = false;
+                    updateCheckBtn.textContent = oldText;
+                    if (result === null) { if (typeof toast === "function") toast("检查更新失败：网络错误"); return; }
+                    if (result.error) { if (typeof toast === "function") toast("检查更新失败：" + result.error); return; }
+                    if (result.available) { if (typeof toast === "function") toast("发现新版本 " + (result.data.version || "")); }
+                    else if (typeof toast === "function") toast("当前已是最新版本");
+                });
+            });
+        }
+        window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+        fetch("/api/data", {signal: AbortSignal.timeout(5000)}).then(function (r) {
+            if (r.status === 404) return null;
+            if (!r.ok) throw new Error("读取配置失败，请勿覆盖原配置");
+            return r.json();
+        }).then(function (d) {
+            if (d && Array.isArray(d.navGroups)) data.navGroups = d.navGroups.map(cloneGroup);
+            if (d && d.siteConfig) data.siteConfig = Object.assign({}, data.siteConfig, d.siteConfig);
+            render(); loaded = true;
+            document.getElementById('save-status').textContent = '配置已加载';
+        }).catch(function (error) { render(); toast(error.message); document.getElementById('save-status').textContent = '读取失败，保存已禁用；可导出当前内容或刷新重试'; });
+
+        function render() {
+            var c = data.siteConfig;
+            document.getElementById("cfg-title").value = c.title || "";
+            document.getElementById("cfg-subtitle").value = c.subtitle || "";
+            var themeSelect = document.getElementById("cfg-themeColor");
+            populateThemeOptions(themeSelect);
+            var savedTheme = null;
+            try { savedTheme = localStorage.getItem("hp_theme"); } catch (ignore) {}
+            var themeKey = window.HP_THEMES && HP_THEMES[c.themeColor] ? c.themeColor : (window.HP_THEMES && HP_THEMES[savedTheme] ? savedTheme : "indigo");
+            themeSelect.value = themeKey;
+            if (window.applyThemeColor && (window.HP_THEMES && HP_THEMES[c.themeColor])) applyThemeColor(themeKey);
+            document.getElementById("cfg-coverImg").value = c.coverImg || "";
+            document.getElementById("cfg-coverFixed").value = c.coverFixed ? "true" : "false";
+            document.getElementById("cfg-siteName").value = c.siteName || "";
+            document.getElementById("cfg-icp").value = c.icp || "";
+            document.getElementById("cfg-gongan").value = c.gongan || "";
+            document.getElementById("cfg-bgMode").value = c.bgMode || "auto";
+            document.getElementById("cfg-bgRotateInterval").value = c.bgRotateInterval || "daily";
+            document.getElementById("cfg-nameScrollSpeed").value = normalizeScrollSpeed(c.nameScrollSpeed, 24);
+            document.getElementById("cfg-descriptionScrollSpeed").value = normalizeScrollSpeed(c.descriptionScrollSpeed, 18);
+            renderGroups();
+        }
+
+        function normalizeScrollSpeed(value, fallback) {
+            var n = Number(value);
+            return Number.isFinite(n) && n >= 5 && n <= 100 ? n : fallback;
+        }
+        function populateThemeOptions(select) {
+            if (!select || select.options.length) return;
+            var themes = window.HP_THEMES || { indigo: { name: "靛紫" } };
+            Object.keys(themes).forEach(function (key) {
+                var option = document.createElement("option");
+                option.value = key;
+                option.textContent = themes[key].name || key;
+                select.appendChild(option);
+            });
+        }
+        function renderGroups() {
+            var wrap = document.getElementById("groups");
+            wrap.innerHTML = "";
+            markDirty();
+            data.navGroups.forEach(function (g, gi) {
+                var card = document.createElement("div");
+                card.className = "group-card";
+
+                var head = document.createElement("div");
+                head.className = "group-head";
+                head.innerHTML =
+                    '<div class="gicon" onclick="pickIcon(' + gi + ')">' + esc(g.icon && !g.icon.includes('<') ? g.icon.slice(0, 32) : (g.icon ? '🖼' : '')) + '</div>' +
+                    '<input type="text" value="' + esc(g.name) + '" placeholder="分组名称" oninput="data.navGroups[' + gi + '].name=this.value">' +
+                    '<div class="actions">' +
+                    '<button class="btn small" onclick="moveGroup(' + gi + ',-1)">↑</button>' +
+                    '<button class="btn small" onclick="moveGroup(' + gi + ',1)">↓</button>' +
+                    '<button class="btn small" onclick="checkGroupLinks(' + gi + ')">检测本组</button>' +
+                    '<button class="btn small" id="batch-ai-' + gi + '" onclick="batchAiFill(' + gi + ')">AI 批量填写</button>' +
+                    '<button class="btn small danger" onclick="delGroup(' + gi + ')">删除</button>' +
+                    '</div>';
+                card.appendChild(head);
+
+                var linksBox = document.createElement("div");
+                linksBox.className = "links";
+                g.links.forEach(function (l, li) {
+                    linksBox.appendChild(linkRow(gi, li, l));
+                });
+                card.appendChild(linksBox);
+
+                var addBtn = document.createElement("button");
+                addBtn.className = "btn small";
+                addBtn.textContent = "＋ 添加链接";
+                addBtn.onclick = function () { openLinkEditor(gi); };
+                card.appendChild(addBtn);
+
+                wrap.appendChild(card);
+            });
+        }
+
+        var batchAiRunning = {};
+        function isHttpUrl(value) { return /^https?:\/\//i.test(String(value || "").trim()); }
+        function splitTags(value) { return String(value || "").split(/[、,，;；]+/).map(function (x) { return x.trim(); }).filter(Boolean); }
+        async function batchAiFill(gi) {
+            if (batchAiRunning[gi]) return;
+            var group = data.navGroups[gi];
+            if (!group || !Array.isArray(group.links)) return;
+            var targets = [];
+            group.links.forEach(function (link) { if (isHttpUrl(link.url)) targets.push(link); });
+            if (!targets.length) { toast("该分组没有可识别的完整 HTTP(S) 网址"); return; }
+            if (!confirm("将调用 AI 逐个识别填写该分组内 " + targets.length + " 个网站的名称、备注、标签和图标（不会自动保存，可点击保存全部），是否继续？")) return;
+            batchAiRunning[gi] = true;
+            var btn = document.getElementById("batch-ai-" + gi);
+            var done = 0, failed = 0;
+            try {
+                for (var i = 0; i < targets.length; i++) {
+                    if (btn) { btn.disabled = true; btn.textContent = "AI 填写中 " + (i + 1) + "/" + targets.length; }
+                    var link = targets[i];
+                    try {
+                        var r = await fetch("/api/ai/fill", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({url:link.url}), signal:AbortSignal.timeout(60000)});
+                        var result = await r.json();
+                        if (!r.ok) throw new Error(result.error || "AI 填写失败");
+                        if (result.name) link.name = result.name;
+                        var desc = result.description || result.tags || "";
+                        if (desc) link.description = desc;
+                        if (result.tags) { var tags = splitTags(result.tags); if (tags.length) link.tags = tags; }
+                        if (result.icon) link.logo = result.icon;
+                        done++;
+                    } catch (error) { failed++; }
+                }
+            } finally {
+                batchAiRunning[gi] = false;
+                if (btn) { btn.disabled = false; btn.textContent = "AI 批量填写"; }
+            }
+            renderGroups();
+            toast("批量 AI 完成：" + done + " 个成功，失败 " + failed + " 个");
+        }
+
+        function collectLinkItems(predicate) {
+            var items = [];
+            data.navGroups.forEach(function (g, gi) {
+                g.links.forEach(function (l, li) {
+                    if (!predicate || predicate(l)) items.push({ gi: gi, li: li, url: l.url, name: l.name });
+                });
+            });
+            return items;
+        }
+        function setLinkDot(gi, li, state) {
+            var dot = document.getElementById('dot-' + gi + '-' + li);
+            if (!dot) return;
+            dot.className = 'link-dot' + (state ? ' ' + state : '');
+        }
+        async function runLinkCheck(items, statusEl, btn) {
+            if (linkChecking) return;
+            if (!items.length) { toast('没有可检测的链接'); return; }
+            linkChecking = true;
+            if (btn) { btn.disabled = true; btn.textContent = '检测中…'; }
+            items.forEach(function (it) { setLinkDot(it.gi, it.li, 'checking'); });
+            var okCount = 0, errCount = 0;
+            try {
+                var r = await fetch('/api/admin/check-links', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({urls:items.map(function (it) { return it.url; })}), signal:AbortSignal.timeout(120000)});
+                var d = await r.json();
+                if (!r.ok) throw new Error(d.error || '检测失败');
+                var results = Array.isArray(d.results) ? d.results : [];
+                items.forEach(function (it, idx) {
+                    var res = results[idx];
+                    var ok = !!(res && res.ok);
+                    if (ok) { okCount++; setLinkDot(it.gi, it.li, 'ok'); }
+                    else { errCount++; setLinkDot(it.gi, it.li, 'err'); }
+                    var dot = document.getElementById('dot-' + it.gi + '-' + it.li);
+                    if (dot) dot.title = (it.name || it.url) + '：' + (res ? (ok ? '正常 (' + res.status + ')' : '异常 ' + (res.error || res.status)) : '无结果');
+                });
+                if (statusEl) statusEl.textContent = '检测完成：正常 ' + okCount + ' 个，异常 ' + errCount + ' 个';
+                toast('检测完成：正常 ' + okCount + '，异常 ' + errCount);
+            } catch (error) {
+                if (statusEl) statusEl.textContent = '检测失败：' + error.message;
+                toast('检测失败：' + error.message);
+            } finally {
+                linkChecking = false;
+                if (btn) { btn.disabled = false; btn.textContent = '一键全部检测'; }
+            }
+        }
+        var linkChecking = false;
+        function checkAllLinks() {
+            var btn = document.getElementById('check-all-links');
+            var statusEl = document.getElementById('check-links-status');
+            var items = collectLinkItems(function (l) { return /^https?:\/\//i.test(String(l.url || '').trim()); });
+            runLinkCheck(items, statusEl, btn);
+        }
+        function checkGroupLinks(gi) {
+            var items = [];
+            var group = data.navGroups[gi];
+            if (!group) return;
+            group.links.forEach(function (l, li) { if (/^https?:\/\//i.test(String(l.url || '').trim())) items.push({ gi: gi, li: li, url: l.url, name: l.name }); });
+            runLinkCheck(items, document.getElementById('check-links-status'), null);
+        }
+        var checkAllBtn = document.getElementById('check-all-links');
+        if (checkAllBtn) checkAllBtn.addEventListener('click', checkAllLinks);
+
+        function linkRow(gi, li, l) {
+            var row = document.createElement("div");
+            row.className = "link-row";
+            row.innerHTML =
+                '<div class="link-summary"><strong>' + esc(l.name) + '</strong><span>' + esc(l.url) + '</span>' +
+                '<small>' + esc([l.description || '', Array.isArray(l.tags) ? l.tags.join(' · ') : (l.tags || ''), l.loginOnly ? '登录可见' : '', l.rssEnabled ? 'RSS' : '', l.articleEnabled ? '关联文章' : '', l.customSvg ? 'SVG' : ''].filter(Boolean).join(' · ')) + '</small></div>' +
+                '<span class="link-dot" id="dot-' + gi + '-' + li + '" title="未检测"></span>' +
+                '<button class="btn small" onclick="openLinkEditor(' + gi + ',' + li + ')">编辑</button>' +
+                '<button class="del" title="删除链接" aria-label="删除 ' + esc(l.name) + '" onclick="delLink(' + gi + ',' + li + ')">×</button>';
+            return row;
+        }
+
+        function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+        function pickIcon(gi) {
+            var emoji = prompt("请输入分组图标（支持 Emoji，例如：⭐ 🔧 🎬 📚 🌐）", "");
+            if (emoji && emoji.trim()) {
+                data.navGroups[gi].icon = emoji.trim();
+                renderGroups();
+            }
+        }
+        function addGroup() {
+            data.navGroups.push({ name: "新分组", icon: "\uD83D\uDD17", links: [] });
+            renderGroups();
+        }
+        function delGroup(gi) {
+            if (confirm("确定删除该分组？")) {
+                data.navGroups.splice(gi, 1);
+                renderGroups();
+            }
+        }
+        function moveGroup(gi, dir) {
+            var j = gi + dir;
+            if (j < 0 || j >= data.navGroups.length) return;
+            var t = data.navGroups[gi]; data.navGroups[gi] = data.navGroups[j]; data.navGroups[j] = t;
+            renderGroups(); markDirty();
+        }
+        function delLink(gi, li) {
+            data.navGroups[gi].links.splice(li, 1);
+            renderGroups();
+        }
+
+        async function logout() {
+            if (dirty && !confirm("还有未保存的修改，确定退出？")) return;
+            try {
+                var r = await fetch('/api/auth/logout', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}', signal:AbortSignal.timeout(5000)});
+                if (!r.ok) throw new Error('退出失败，请重试');
+                dirty = false; location.replace('/login.html?next=/admin.html');
+            } catch (error) { toast(error.message); }
+        }
+
+        function collectConfig() {
+            data.siteConfig.nameScrollSpeed = normalizeScrollSpeed(document.getElementById("cfg-nameScrollSpeed").value, 24);
+            data.siteConfig.descriptionScrollSpeed = normalizeScrollSpeed(document.getElementById("cfg-descriptionScrollSpeed").value, 18);
+            document.getElementById("cfg-nameScrollSpeed").value = data.siteConfig.nameScrollSpeed;
+            document.getElementById("cfg-descriptionScrollSpeed").value = data.siteConfig.descriptionScrollSpeed;
+            data.siteConfig.title = document.getElementById("cfg-title").value;
+            data.siteConfig.subtitle = document.getElementById("cfg-subtitle").value;
+            data.siteConfig.coverImg = document.getElementById("cfg-coverImg").value;
+            data.siteConfig.coverFixed = document.getElementById("cfg-coverFixed").value === "true";
+            data.siteConfig.siteName = document.getElementById("cfg-siteName").value;
+            data.siteConfig.icp = document.getElementById("cfg-icp").value;
+            data.siteConfig.gongan = document.getElementById("cfg-gongan").value;
+            data.siteConfig.bgMode = document.getElementById("cfg-bgMode").value || "auto";
+            data.siteConfig.bgRotateInterval = document.getElementById("cfg-bgRotateInterval").value;
+            data.siteConfig.themeColor = document.getElementById("cfg-themeColor").value;
+
+        }
+        function validateConfig(value) {
+            if (!value || !Array.isArray(value.navGroups) || !value.siteConfig || Array.isArray(value.siteConfig) || typeof value.siteConfig !== 'object') throw new Error('配置必须包含 navGroups 数组和 siteConfig 对象');
+            if (value.navGroups.length > 100) throw new Error('最多允许 100 个分组');
+            value.navGroups.forEach(function (g) {
+                if (!g || typeof g.name !== 'string' || !g.name.trim() || !Array.isArray(g.links)) throw new Error('分组名称不能为空，链接必须是数组');
+                g.links.forEach(function (l) {
+                    validateLinkDraft(l);
+                });
+            });
+        }
+        async function save() {
+            if (!loaded || saving) { toast('请等待配置加载完成后再保存'); return false; }
+            collectConfig();
+            try { validateConfig(data); } catch (error) { toast(error.message); return false; }
+            saving = true;
+            var revision = JSON.stringify(data);
+            var button = document.querySelector('button[onclick="save()"]'); button.disabled = true; button.textContent = '保存中…';
+            try {
+                var r = await fetch('/api/data', {method:'POST', headers:{'Content-Type':'application/json'}, body:revision, signal:AbortSignal.timeout(10000)});
+                var result = await r.json();
+                if (!r.ok) throw new Error(result.error || '保存失败');
+                collectConfig(); dirty = JSON.stringify(data) !== revision;
+                document.getElementById('save-status').textContent = dirty ? '已保存提交的版本，仍有新修改未保存' : '已保存 · ' + new Date().toLocaleTimeString('zh-CN');
+                toast('配置已保存');
+                return true;
+            } catch (error) { toast(error.message + '；当前修改仍保留，可先导出备份'); return false; }
+            finally { saving = false; button.disabled = false; button.textContent = '保存全部'; }
+        }
+        function exportConfig() {
+            collectConfig();
+            var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+            var a = document.createElement('a'); a.href = url; a.download = 'hellopage-config.json'; a.click();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }
+        document.getElementById('import-file').addEventListener('change', async function () {
+            var file = this.files[0]; this.value = ''; if (!file) return;
+            try {
+                if (file.size > 4 * 1024 * 1024) throw new Error('配置文件不能超过 4 MB');
+                var value = JSON.parse(await file.text()); validateConfig(value);
+                if (!confirm('导入将替换当前编辑内容，但不会立即写入服务器。确定继续？')) return;
+                data = {navGroups:value.navGroups.map(cloneGroup), siteConfig:Object.assign({}, data.siteConfig, value.siteConfig)};
+                render(); markDirty(); toast('已导入，请检查后保存');
+            } catch (error) { toast('导入失败：' + error.message); }
+        });
+        document.getElementById('password-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            var form = this, newPassword = document.getElementById('new-password').value;
+            if (newPassword !== document.getElementById('new-password-confirm').value) { toast('两次输入的新密码不一致'); return; }
+            var button = form.querySelector('button'); button.disabled = true;
+            try {
+                var r = await fetch('/api/auth/password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({oldPassword:document.getElementById('old-password').value, newPassword:newPassword}), signal:AbortSignal.timeout(10000)});
+                var result = await r.json(); if (!r.ok) throw new Error(result.error || '修改失败');
+                form.reset(); toast('密码已修改，其他登录会话已失效');
+            } catch (error) { toast(error.message); }
+            finally { button.disabled = false; }
+        });
+        async function loadAIConfig() {
+            try {
+                var r = await fetch('/api/ai/config', {signal: AbortSignal.timeout(5000)});
+                var result = await r.json();
+                if (r.ok && result.config) {
+                    document.getElementById('ai-endpoint').value = result.config.endpoint || '';
+                    document.getElementById('ai-key').value = result.config.apiKey || '';
+                    document.getElementById('ai-model').value = result.config.model || '';
+                    document.getElementById('ai-description-max').value = result.config.descriptionMax || 120;
+                }
+            } catch (error) { /* 忽略 */ }
+        }
+        async function saveAIConfig(silent) {
+            var status = document.getElementById('ai-status');
+            var cfg = {
+                endpoint: document.getElementById('ai-endpoint').value.trim(),
+                apiKey: document.getElementById('ai-key').value.trim(),
+                model: document.getElementById('ai-model').value.trim(),
+                descriptionMax: Math.max(20, Math.min(4096, parseInt(document.getElementById('ai-description-max').value, 10) || 120))
+            };
+            try {
+                var r = await fetch('/api/ai/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg), signal:AbortSignal.timeout(8000)});
+                var result = await r.json();
+                if (!r.ok) throw new Error(result.error || '保存失败');
+                if (!silent) { status.textContent = 'AI 配置已保存'; status.style.color = '#0f766e'; }
+                return true;
+            } catch (error) {
+                status.textContent = '保存失败：' + error.message;
+                status.style.color = '#be123c';
+                return false;
+            }
+        }
+        async function testAI() {
+            var status = document.getElementById('ai-status');
+            status.textContent = '正在测试百度主页信息…';
+            status.style.color = 'var(--ink-soft)';
+            if (!await saveAIConfig(true)) { status.textContent = '测试中止：AI 配置保存失败'; status.style.color = '#be123c'; return; }
+            try {
+                var r = await fetch('/api/ai/test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url:'https://www.baidu.com'}), signal:AbortSignal.timeout(90000)});
+                var contentType = r.headers.get('content-type') || '';
+                var raw = await r.text();
+                var result;
+                try { result = JSON.parse(raw); } catch (parseError) { throw new Error(r.status === 401 ? '登录已失效，请重新登录' : '服务器返回了非 JSON 内容（可能是登录失效或接口异常）'); }
+                if (!r.ok) throw new Error(result.error || '测试失败');
+                var parts = ['名称：' + (result.name || '—'), '备注：' + (result.description || '—')];
+                if (result.tags) parts.push('标签：' + result.tags);
+                parts.push('图标：' + (result.icon || '未获取'));
+                parts.push(result.configured ? (result.aiOK ? 'AI 已连接' : 'AI 未生效') : 'AI 未配置');
+                status.textContent = parts.join(' ｜ ');
+                status.style.color = (result.icon || result.aiOK) ? '#0f766e' : '#b45309';
+            } catch (error) {
+                status.textContent = '测试失败：' + error.message;
+                status.style.color = '#be123c';
+            }
+        }
+        loadAIConfig();
+
+        // 为静态字段与动态输入补上可访问名称。
+        document.querySelectorAll('.field').forEach(function (field) { var label=field.querySelector('label'), input=field.querySelector('input,select'); if(label && input) label.htmlFor=input.id; });
+    </script>
+    <script src="assets/js/link-editor.js"></script>
+    <script src="assets/vendor/marked.min.js"></script>
+    <script src="assets/vendor/purify.min.js"></script>
+    <script src="assets/js/article-renderer.js"></script>
+    <script src="assets/js/article-admin.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/wallpapers-admin.js"></script>
+</body>
+
+</html>

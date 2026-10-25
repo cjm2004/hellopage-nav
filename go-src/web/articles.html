@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/assets/js/theme.js"></script>
+    <meta name="referrer" content="no-referrer">
+    <title>文章</title>
+    <link href="/assets/css/articles.css" rel="stylesheet">
+</head>
+<body class="article-page">
+    <nav class="article-nav">
+        <a class="article-brand" href="/"><span class="article-brand-mark">HP</span><span>返回主页</span></a>
+        <div class="article-links"><a href="/articles">文章</a><a href="/admin.html">管理后台</a></div>
+    </nav>
+    <main class="article-shell">
+        <header class="article-list-head">
+            <div><h1>文章</h1><p>最新发布的内容与活动。</p></div>
+            <input id="article-search" class="article-search" type="search" placeholder="搜索文章标题或摘要" autocomplete="off">
+        </header>
+        <div id="article-list" class="article-grid" aria-live="polite"></div>
+        <div id="article-status" class="article-status"></div>
+    </main>
+    <script src="/assets/vendor/marked.min.js"></script>
+    <script src="/assets/vendor/purify.min.js"></script>
+    <script src="/assets/js/article-renderer.js"></script>
+    <script src="/assets/js/articles.js"></script>
+</body>
+</html>

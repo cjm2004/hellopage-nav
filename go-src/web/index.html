@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/update.js"></script>
+    <title>我的导航</title>
+    <link href="assets/css/style.css" type="text/css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- 页面背景（对应 HelloPage banner 片段：图片/视频 + 底部渐变遮罩） -->
+    <div id="banner" class="banner-video" role="img" aria-label="页面背景">
+        <div class="bottom-cover"></div>
+    </div>
+
+    <!-- 顶部导航（对应 HelloPage navbar 片段） -->
+    <nav class="navbar fixed-top" role="navigation" aria-label="主导航">
+        <button id="navbar-toggler" class="navbar-toggler collapsed" type="button" aria-controls="navbarsExample05"
+            aria-expanded="false" aria-label="切换导航菜单">
+            <svg viewBox="0 0 1024 1024" width="24" height="24" aria-hidden="true" style="fill: currentColor;">
+                <path d="M120 256h784a32 32 0 1 0 0-64H120a32 32 0 0 0 0 64z m0 256h784a32 32 0 1 0 0-64H120a32 32 0 0 0 0 64z m0 256h784a32 32 0 1 0 0-64H120a32 32 0 0 0 0 64z" fill="currentColor"/>
+            </svg>
+        </button>
+        <div class="type-right" aria-hidden="true">
+            <svg viewBox="0 0 1024 1024" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                <path d="M512 0c281.6 0 512 230.4 512 512s-230.4 512-512 512S0 793.6 0 512 230.4 0 512 0z m192.96 261.888l-259.904 78.784c-51.2 13.76-90.592 53.184-106.336 104.384L259.936 704.96c-5.888 15.776 0 33.472 11.808 45.312 7.872 9.824 21.696 13.76 33.472 13.76 3.936 0 9.856 0 13.792-1.984l259.904-78.784c51.2-13.76 90.592-53.184 106.336-104.384l78.784-259.904c5.888-15.776 0-33.472-11.808-45.312-13.792-13.76-31.52-17.728-47.296-11.808v-0.032z m-96.448 295.424a79.872 79.872 0 0 1-53.184 53.152l-200.864 59.072 61.056-202.816a79.904 79.904 0 0 1 53.184-53.184l200.864-59.072-61.056 202.848zM472.64 512a39.36 39.36 0 1 0 78.72 0 39.36 39.36 0 0 0-78.72 0z" fill="#dbdbdb"/>
+            </svg>
+        </div>
+        <div class="collapse" id="navbarsExample05">
+            <ul class="navbar-nav mr-auto" id="nav-menu"></ul>
+            <div class="nav-admin-entry">
+                <a class="nav-admin-link" href="/articles">文章</a>
+                <a class="nav-admin-link" href="admin.html">管理后台</a>
+                <button class="nav-admin-link" id="mode-toggle" type="button">外观：跟随系统</button>
+            </div>
+            <div id="main">
+                <div id="show_date" aria-live="off"></div>
+                <div id="show_time" aria-live="off"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面内容 -->
+    <div class="container" style="position: relative; z-index: 100;">
+        <h2 class="title" id="site-title"></h2>
+        <p class="content" id="site-subtitle"></p>
+
+        <!-- 搜索框 -->
+        <div id="search" class="s-search" role="search" aria-label="搜索引擎">
+            <div id="search-list" class="hide-type-list">
+                <div class="search-group group-a s-current">
+                    <ul id="search-type" class="search-type" role="radiogroup" aria-label="选择搜索引擎"></ul>
+                </div>
+            </div>
+            <form action="https://www.bing.com/search?q=" method="get" id="super-search-fm">
+                <input type="text" id="search-text" placeholder="搜索一下" style="outline:0" autocomplete="off"
+                    aria-label="搜索内容" />
+                <button class="submit" type="submit" aria-label="提交搜索">
+                    <svg class="icon" aria-hidden="true" viewBox="0 0 1024 1024">
+                        <path
+                            d="M950.820202 899.620202l-168.210101-168.080808c64.646465-74.731313 100.072727-169.115152 100.072727-268.8 0-109.89899-42.79596-213.20404-120.50101-290.779798S581.171717 51.329293 471.40202 51.329293c-109.89899 0-213.20404 42.79596-290.779798 120.50101-77.705051 77.705051-120.50101 181.010101-120.50101 290.779798 0 109.89899 42.79596 213.20404 120.50101 290.779798 77.705051 77.705051 181.010101 120.50101 290.779798 120.50101 90.763636 0 177.00202-29.220202 248.113132-83.135353l170.149494 170.149495c8.40404 8.40404 19.523232 12.670707 30.642425 12.670707s22.109091-4.266667 30.642424-12.670707c16.808081-16.937374 16.808081-44.347475-0.129293-61.284849z m-804.20202-437.010101c0-179.070707 145.713131-324.654545 324.654545-324.654545 179.070707 0 324.654545 145.713131 324.654546 324.654545 0.129293 179.070707-145.454545 324.783838-324.525253 324.783838S146.618182 641.680808 146.618182 462.610101z m0 0"
+                            fill=""></path>
+                    </svg>
+                </button>
+                <span></span>
+                <ul id="word" style="display: none;" role="listbox" aria-label="搜索建议"></ul>
+            </form>
+        </div>
+
+        <!-- 导航列表（由 links.js 数据渲染） -->
+        <div class="filter-toolbar">
+            <input id="site-filter" type="search" aria-label="站点筛选" placeholder="输入站点、分组或域名" autocomplete="off">
+            <span id="filter-status" role="status" aria-live="polite"></span>
+        </div>
+        <div id="nav-list"></div>
+        <p id="nav-empty" class="empty-state" hidden>没有匹配的站点。可以清空筛选，或在管理后台添加链接。</p>
+
+        <!-- 页脚 -->
+        <div class="mt-5 mb-3 footer text-muted text-center" role="contentinfo">
+            <div id="beian-icp"></div>
+            <div id="beian-gongan"></div>
+            <p id="footer-copyright"></p>
+        </div>
+    </div>
+
+    <script src="assets/js/engines.js"></script>
+    <script src="assets/js/links.js"></script>
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

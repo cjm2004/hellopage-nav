@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/assets/js/theme.js"></script>
+    <meta name="referrer" content="no-referrer">
+    <title>文章</title>
+    <link href="/assets/css/articles.css" rel="stylesheet">
+</head>
+<body class="article-page">
+    <nav class="article-nav">
+        <a class="article-brand" href="/"><span class="article-brand-mark">HP</span><span>返回主页</span></a>
+        <div class="article-links"><a href="/articles">文章</a><a href="/admin.html">管理后台</a></div>
+    </nav>
+    <main class="article-shell">
+        <div id="article-notice" class="article-notice" hidden></div>
+        <header id="article-hero" class="article-hero" hidden>
+            <div id="article-kicker" class="article-kicker">文章</div>
+            <h1 id="article-title"></h1>
+            <p id="article-summary" class="article-summary"></p>
+            <div id="article-meta" class="article-meta"></div>
+            <img id="article-cover" class="article-cover" alt="" hidden>
+        </header>
+        <div class="article-layout">
+            <article id="article-body" class="article-body"></article>
+            <aside id="article-toc" class="article-toc"></aside>
+        </div>
+        <section id="article-comments" class="article-comments" hidden>
+            <h2>评论</h2>
+            <div id="comment-list" class="comment-list"></div>
+            <form id="comment-form" class="article-form" hidden>
+                <label>称呼<input id="comment-name" type="text" maxlength="80" autocomplete="name" required></label>
+                <label>评论内容（仅用于展示，需审核后公开）<textarea id="comment-content" maxlength="3000" required></textarea></label>
+                <button type="submit">提交评论</button>
+                <p id="comment-feedback" class="comment-feedback" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+        <div id="article-status" class="article-status"></div>
+    </main>
+    <script src="/assets/vendor/marked.min.js"></script>
+    <script src="/assets/vendor/purify.min.js"></script>
+    <script src="/assets/js/article-renderer.js"></script>
+    <script src="/assets/js/articles.js"></script>
+</body>
+</html>
